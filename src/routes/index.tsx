@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import logoAsset from "@/assets/rancod-logo.png.asset.json";
+import wordmarkAsset from "@/assets/rancod-wordmark.png.asset.json";
+import { Menu, X, ArrowRight, Coins, Layers, Map, Sparkles, Workflow } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
