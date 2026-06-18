@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import logoAsset from "@/assets/rancod-logo.png.asset.json";
+import wordmarkAsset from "@/assets/rancod-wordmark.png.asset.json";
+import { Menu, X, ArrowRight, Coins, Layers, Map, Sparkles, Workflow } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,18 +25,18 @@ export const Route = createFileRoute("/")({
 });
 
 const NAV = [
-  { href: "#how", label: "How It Works" },
-  { href: "#earn", label: "Earn Model" },
-  { href: "#plans", label: "Plans" },
-  { href: "#stack", label: "Tech Stack" },
-  { href: "#roadmap", label: "Roadmap" },
+  { href: "#how", label: "How It Works", icon: Workflow },
+  { href: "#earn", label: "Earn Model", icon: Coins },
+  { href: "#plans", label: "Plans", icon: Sparkles },
+  { href: "#stack", label: "Tech Stack", icon: Layers },
+  { href: "#roadmap", label: "Roadmap", icon: Map },
 ];
 
-function Logo({ size = 32 }: { size?: number }) {
+function LogoMark({ size = 36 }: { size?: number }) {
   return (
     <img
       src={logoAsset.url}
-      alt="rancod.ai logo"
+      alt=""
       width={size}
       height={size}
       style={{ height: size, width: size }}
@@ -43,15 +45,14 @@ function Logo({ size = 32 }: { size?: number }) {
   );
 }
 
-function LogoWord() {
+function Wordmark({ height = 26 }: { height?: number }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <Logo size={32} />
-      <span className="font-display text-[20px] font-extrabold tracking-tight">
-        <span className="text-[color:var(--brand-navy)]">rancod</span>
-        <span className="text-gradient-brand">.ai</span>
-      </span>
-    </div>
+    <img
+      src={wordmarkAsset.url}
+      alt="rancod.ai"
+      style={{ height }}
+      className="w-auto object-contain"
+    />
   );
 }
 
@@ -81,10 +82,11 @@ function Landing() {
       </div>
 
       {/* NAV */}
-      <nav className="sticky top-0 z-[200] h-16 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6 lg:px-10">
-          <a href="#top" className="flex items-center">
-            <LogoWord />
+      <nav className="sticky top-0 z-[200] h-16 border-b border-border bg-background/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 lg:px-10">
+          <a href="#top" className="flex items-center gap-2.5">
+            <LogoMark size={32} />
+            <Wordmark height={22} />
           </a>
           <ul className="hidden items-center gap-8 lg:flex">
             {NAV.map((n) => (
@@ -98,52 +100,118 @@ function Landing() {
               </li>
             ))}
           </ul>
-          <div className="hidden items-center gap-3 lg:flex">
-            <span className="font-mono text-[10px] font-semibold tracking-[0.15em] text-[color:var(--brand-violet)] border border-[color:var(--brand-violet)]/30 rounded px-2 py-1">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="hidden font-mono text-[10px] font-semibold tracking-[0.15em] text-[color:var(--brand-violet)] border border-[color:var(--brand-violet)]/30 rounded px-2 py-1 sm:inline">
               BLUEPRINT v2
             </span>
             <a
               href="#earn"
-              className="inline-flex items-center rounded-lg bg-gradient-brand px-4 py-2 text-[13px] font-semibold text-primary-foreground shadow-brand transition-transform hover:-translate-y-0.5"
+              className="hidden sm:inline-flex items-center rounded-lg bg-gradient-brand px-4 py-2 text-[13px] font-semibold text-primary-foreground shadow-brand transition-transform hover:-translate-y-0.5"
             >
               Start Earning
             </a>
+            <button
+              type="button"
+              aria-label="Open menu"
+              onClick={() => setMobileOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-[color:var(--brand-navy)] shadow-card transition-colors hover:border-[color:var(--brand-violet)]/50"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* SIDEBAR DRAWER */}
+      <div
+        aria-hidden
+        onClick={() => setMobileOpen(false)}
+        className={`fixed inset-0 z-[300] bg-[color:var(--brand-navy)]/40 backdrop-blur-sm transition-opacity duration-300 ${
+          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      />
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Main menu"
+        className={`fixed inset-y-0 right-0 z-[310] flex w-[88%] max-w-sm flex-col border-l border-border bg-background shadow-brand transition-transform duration-300 ease-out ${
+          mobileOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <div className="flex items-center gap-2.5">
+            <LogoMark size={28} />
+            <Wordmark height={18} />
           </div>
           <button
             type="button"
-            aria-label="Toggle menu"
-            onClick={() => setMobileOpen((v) => !v)}
-            className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-md lg:hidden"
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:border-[color:var(--brand-violet)]/50 hover:text-[color:var(--brand-violet)]"
           >
-            <span
-              className={`h-0.5 w-5 bg-foreground transition-transform ${mobileOpen ? "translate-y-2 rotate-45" : ""}`}
-            />
-            <span
-              className={`h-0.5 w-5 bg-foreground transition-opacity ${mobileOpen ? "opacity-0" : ""}`}
-            />
-            <span
-              className={`h-0.5 w-5 bg-foreground transition-transform ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`}
-            />
+            <X className="h-4 w-4" />
           </button>
         </div>
-        {mobileOpen && (
-          <div className="border-t border-border bg-background lg:hidden">
-            <ul className="mx-auto flex max-w-7xl flex-col px-6 py-2">
-              {NAV.map((n) => (
-                <li key={n.href}>
-                  <a
-                    href={n.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="block border-b border-border py-3 text-sm text-foreground"
-                  >
-                    {n.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+
+        <div className="flex-1 overflow-y-auto px-3 py-4">
+          <div className="px-3 pb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Navigate
           </div>
-        )}
-      </nav>
+          <nav className="flex flex-col gap-1">
+            {NAV.map((n) => {
+              const Icon = n.icon;
+              return (
+                <a
+                  key={n.href}
+                  href={n.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[color:var(--brand-navy)] transition-colors hover:bg-[color:var(--brand-violet)]/10 hover:text-[color:var(--brand-violet)]"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-soft text-[color:var(--brand-violet)] transition-colors group-hover:bg-gradient-brand group-hover:text-primary-foreground">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="flex-1">{n.label}</span>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                </a>
+              );
+            })}
+          </nav>
+
+          <div className="mt-6 px-3 pb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Live signal
+          </div>
+          <div className="mx-3 rounded-xl border border-border bg-card p-4 shadow-card">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[color:var(--success)] opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[color:var(--success)]" />
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Earning Live
+              </span>
+            </div>
+            <div className="mt-2 font-display text-2xl font-bold text-[color:var(--brand-navy)]">
+              $0.0042
+              <span className="ml-1 text-xs font-medium text-muted-foreground">
+                / 1K tokens
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-border px-5 py-4">
+          <a
+            href="#earn"
+            onClick={() => setMobileOpen(false)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-brand px-4 py-3 text-sm font-semibold text-primary-foreground shadow-brand transition-transform hover:-translate-y-0.5"
+          >
+            Start Earning <ArrowRight className="h-4 w-4" />
+          </a>
+          <p className="mt-3 text-center text-[11px] text-muted-foreground">
+            Blueprint v2.0 · No crypto. Real revenue sharing.
+          </p>
+        </div>
+      </aside>
 
       <main id="top">
         {/* HERO */}
@@ -796,7 +864,10 @@ function Landing() {
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 px-6 py-10 md:flex-row md:items-center lg:px-10">
           <div>
-            <LogoWord />
+            <div className="flex items-center gap-2.5">
+              <LogoMark size={32} />
+              <Wordmark height={22} />
+            </div>
             <p className="mt-2 text-xs text-muted-foreground">
               Host your AI. Serve tokens. Get paid real money.
             </p>
