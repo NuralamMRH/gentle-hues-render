@@ -25,18 +25,18 @@ export const Route = createFileRoute("/")({
 });
 
 const NAV = [
-  { href: "#how", label: "How It Works" },
-  { href: "#earn", label: "Earn Model" },
-  { href: "#plans", label: "Plans" },
-  { href: "#stack", label: "Tech Stack" },
-  { href: "#roadmap", label: "Roadmap" },
+  { href: "#how", label: "How It Works", icon: Workflow },
+  { href: "#earn", label: "Earn Model", icon: Coins },
+  { href: "#plans", label: "Plans", icon: Sparkles },
+  { href: "#stack", label: "Tech Stack", icon: Layers },
+  { href: "#roadmap", label: "Roadmap", icon: Map },
 ];
 
-function Logo({ size = 32 }: { size?: number }) {
+function LogoMark({ size = 36 }: { size?: number }) {
   return (
     <img
       src={logoAsset.url}
-      alt="rancod.ai logo"
+      alt=""
       width={size}
       height={size}
       style={{ height: size, width: size }}
@@ -45,15 +45,14 @@ function Logo({ size = 32 }: { size?: number }) {
   );
 }
 
-function LogoWord() {
+function Wordmark({ height = 26 }: { height?: number }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <Logo size={32} />
-      <span className="font-display text-[20px] font-extrabold tracking-tight">
-        <span className="text-[color:var(--brand-navy)]">rancod</span>
-        <span className="text-gradient-brand">.ai</span>
-      </span>
-    </div>
+    <img
+      src={wordmarkAsset.url}
+      alt="rancod.ai"
+      style={{ height }}
+      className="w-auto object-contain"
+    />
   );
 }
 
