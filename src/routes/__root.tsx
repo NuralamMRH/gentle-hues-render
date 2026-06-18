@@ -77,19 +77,35 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "rancod.ai — Host your AI. Serve tokens. Get paid real money." },
+      {
+        name: "description",
+        content:
+          "rancod.ai is an AI marketplace where providers host local AI models and earn real cash from user subscriptions and token usage. No crypto. Just compute turned into a paycheck.",
+      },
+      { name: "author", content: "rancod.ai" },
+      { property: "og:title", content: "rancod.ai — Compute → Cash" },
+      {
+        property: "og:description",
+        content:
+          "Host your AI model, serve tokens, and earn real money from rancod.ai's subscription and usage revenue pool.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "rancod.ai — Compute → Cash" },
+      {
+        name: "twitter:description",
+        content:
+          "An AI marketplace that pays providers real cash for the tokens their models serve.",
+      },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap",
       },
     ],
   }),
