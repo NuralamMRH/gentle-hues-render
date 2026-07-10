@@ -20,13 +20,8 @@
 
   ],
 
-  "assets": {
 
-    "binding": "ASSETS",
 
-    "directory": "./dist/client"
-
-  },
 
   "no_bundle": true,
 
