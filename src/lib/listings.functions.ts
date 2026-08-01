@@ -110,11 +110,12 @@ export const updateMyListing = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => UpdateInput.parse(input))
   .handler(async ({ data, context }) => {
     const { id, auth_header, ...rest } = data;
-    const patch: Record<string, unknown> = { ...rest, status: "pending" };
+    const patch = { ...rest, status: "pending" as const, auth_header_ciphertext: undefined as string | undefined };
     if (auth_header) {
       const { encryptSecret } = await import("./secure.server");
-      patch["auth_header_ciphertext"] = encryptSecret(auth_header);
+      patch.auth_header_ciphertext = encryptSecret(auth_header);
     }
+
     const { error } = await context.supabase
       .from("ai_listings")
       .update(patch)
