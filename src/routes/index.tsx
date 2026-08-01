@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import logoAsset from "@/assets/rancod-logo.png.asset.json";
 import wordmarkAsset from "@/assets/rancod-wordmark.png.asset.json";
