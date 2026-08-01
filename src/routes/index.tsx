@@ -104,12 +104,19 @@ function Landing() {
             <span className="hidden font-mono text-[10px] font-semibold tracking-[0.15em] text-[color:var(--brand-violet)] border border-[color:var(--brand-violet)]/30 rounded px-2 py-1 sm:inline">
               BLUEPRINT v2
             </span>
-            <a
-              href="#earn"
+            <Link
+              to="/auth"
+              className="hidden sm:inline-flex items-center rounded-lg border border-border px-3 py-2 text-[13px] font-semibold text-foreground transition-colors hover:bg-muted"
+            >
+              Sign in
+            </Link>
+            <Link
+              to="/auth"
               className="hidden sm:inline-flex items-center rounded-lg bg-gradient-brand px-4 py-2 text-[13px] font-semibold text-primary-foreground shadow-brand transition-transform hover:-translate-y-0.5"
             >
               Start Earning
-            </a>
+            </Link>
+
             <button
               type="button"
               aria-label="Open menu"
