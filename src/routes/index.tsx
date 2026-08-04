@@ -848,18 +848,19 @@ function Landing() {
                   from real subscription revenue — paid out monthly in real money.
                 </p>
                 <div className="mt-7 flex flex-wrap justify-center gap-3">
-                  <a
-                    href="#earn"
+                  <Link
+                    to="/provider"
                     className="inline-flex items-center justify-center rounded-xl bg-background px-6 py-3 text-sm font-semibold text-[color:var(--brand-navy)] shadow-card transition-transform hover:-translate-y-0.5"
                   >
                     Become a Provider
-                  </a>
+                  </Link>
                   <a
                     href="#plans"
                     className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-primary-foreground backdrop-blur transition-colors hover:bg-white/20"
                   >
                     Explore Plans
                   </a>
+
                 </div>
               </div>
             </div>
