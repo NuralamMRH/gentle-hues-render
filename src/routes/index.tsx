@@ -288,12 +288,26 @@ function Landing() {
             </div>
 
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <a
-                href="#earn"
+              <Link
+                to="/provider"
                 className="inline-flex items-center justify-center rounded-xl bg-gradient-brand px-6 py-3 text-sm font-semibold text-primary-foreground shadow-brand transition-transform hover:-translate-y-0.5"
               >
-                See How You Earn →
-              </a>
+                Become a Provider →
+              </Link>
+              <Link
+                to="/auth"
+                search={{ mode: "signup", role: "user" }}
+                className="inline-flex items-center justify-center rounded-xl border border-[color:var(--brand-violet)]/40 bg-[color:var(--brand-violet)]/8 px-6 py-3 text-sm font-semibold text-[color:var(--brand-navy)] shadow-card transition-transform hover:-translate-y-0.5"
+              >
+                Become a User
+              </Link>
+              <Link
+                to="/chat"
+                className="inline-flex items-center justify-center rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-[color:var(--brand-navy)] shadow-card transition-colors hover:border-[color:var(--brand-violet)]/50"
+              >
+                Open Chat
+              </Link>
+
               <a
                 href="#stack"
                 className="inline-flex items-center justify-center rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-[color:var(--brand-navy)] shadow-card transition-colors hover:border-[color:var(--brand-violet)]/50"
