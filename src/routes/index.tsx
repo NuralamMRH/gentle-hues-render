@@ -563,7 +563,19 @@ function Landing() {
                     </li>
                   ))}
                 </ul>
+                <Link
+                  to="/auth"
+                  search={{ mode: "signup", role: "user", ...(t.code ? { plan: t.code } : {}) }}
+                  className={`mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform hover:-translate-y-0.5 ${
+                    t.featured
+                      ? "bg-gradient-brand text-primary-foreground shadow-brand"
+                      : "border border-border bg-card text-[color:var(--brand-navy)] shadow-card"
+                  }`}
+                >
+                  {t.code ? "Create account & subscribe" : "Contact sales"}
+                </Link>
               </div>
+
             ))}
           </div>
         </Section>
