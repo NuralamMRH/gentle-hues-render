@@ -207,13 +207,32 @@ function Landing() {
         </div>
 
         <div className="border-t border-border px-5 py-4">
-          <a
-            href="#earn"
+          <div className="mb-3 grid grid-cols-2 gap-2">
+            <Link
+              to="/auth"
+              search={{ mode: "signin" }}
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-[color:var(--brand-navy)] shadow-card"
+            >
+              Sign in
+            </Link>
+            <Link
+              to="/auth"
+              search={{ mode: "signup", role: "user" }}
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center rounded-xl border border-[color:var(--brand-violet)]/40 bg-[color:var(--brand-violet)]/10 px-4 py-2.5 text-sm font-semibold text-[color:var(--brand-navy)]"
+            >
+              Register
+            </Link>
+          </div>
+          <Link
+            to="/provider"
             onClick={() => setMobileOpen(false)}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-brand px-4 py-3 text-sm font-semibold text-primary-foreground shadow-brand transition-transform hover:-translate-y-0.5"
           >
-            Start Earning <ArrowRight className="h-4 w-4" />
-          </a>
+            Become a Provider <ArrowRight className="h-4 w-4" />
+          </Link>
+
           <p className="mt-3 text-center text-[11px] text-muted-foreground">
             Blueprint v2.0 · No crypto. Real revenue sharing.
           </p>
