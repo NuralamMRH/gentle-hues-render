@@ -28,6 +28,7 @@ export type Database = {
           last_heartbeat_at: string | null
           model_name: string | null
           name: string
+          offered_monthly_tokens: number
           owner_id: string
           price_per_million_tokens_cents: number
           review_notes: string | null
@@ -52,6 +53,7 @@ export type Database = {
           last_heartbeat_at?: string | null
           model_name?: string | null
           name: string
+          offered_monthly_tokens?: number
           owner_id: string
           price_per_million_tokens_cents?: number
           review_notes?: string | null
@@ -76,6 +78,7 @@ export type Database = {
           last_heartbeat_at?: string | null
           model_name?: string | null
           name?: string
+          offered_monthly_tokens?: number
           owner_id?: string
           price_per_million_tokens_cents?: number
           review_notes?: string | null
@@ -378,7 +381,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "provider"
       submission_status:
         | "draft"
         | "pending"
@@ -519,7 +522,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "provider"],
       submission_status: [
         "draft",
         "pending",
