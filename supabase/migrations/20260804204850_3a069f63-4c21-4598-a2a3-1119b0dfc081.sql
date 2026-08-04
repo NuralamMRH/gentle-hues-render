@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.grant_admin_for_known_email() FROM PUBLIC;

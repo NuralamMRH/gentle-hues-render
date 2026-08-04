@@ -106,16 +106,18 @@ function Landing() {
             </span>
             <Link
               to="/auth"
+              search={{ mode: "signin" }}
               className="hidden sm:inline-flex items-center rounded-lg border border-border px-3 py-2 text-[13px] font-semibold text-foreground transition-colors hover:bg-muted"
             >
               Sign in
             </Link>
             <Link
-              to="/auth"
+              to="/provider"
               className="hidden sm:inline-flex items-center rounded-lg bg-gradient-brand px-4 py-2 text-[13px] font-semibold text-primary-foreground shadow-brand transition-transform hover:-translate-y-0.5"
             >
-              Start Earning
+              Become a Provider
             </Link>
+
 
             <button
               type="button"
@@ -207,13 +209,32 @@ function Landing() {
         </div>
 
         <div className="border-t border-border px-5 py-4">
-          <a
-            href="#earn"
+          <div className="mb-3 grid grid-cols-2 gap-2">
+            <Link
+              to="/auth"
+              search={{ mode: "signin" }}
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-[color:var(--brand-navy)] shadow-card"
+            >
+              Sign in
+            </Link>
+            <Link
+              to="/auth"
+              search={{ mode: "signup", role: "user" }}
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center rounded-xl border border-[color:var(--brand-violet)]/40 bg-[color:var(--brand-violet)]/10 px-4 py-2.5 text-sm font-semibold text-[color:var(--brand-navy)]"
+            >
+              Register
+            </Link>
+          </div>
+          <Link
+            to="/provider"
             onClick={() => setMobileOpen(false)}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-brand px-4 py-3 text-sm font-semibold text-primary-foreground shadow-brand transition-transform hover:-translate-y-0.5"
           >
-            Start Earning <ArrowRight className="h-4 w-4" />
-          </a>
+            Become a Provider <ArrowRight className="h-4 w-4" />
+          </Link>
+
           <p className="mt-3 text-center text-[11px] text-muted-foreground">
             Blueprint v2.0 · No crypto. Real revenue sharing.
           </p>
@@ -288,12 +309,26 @@ function Landing() {
             </div>
 
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <a
-                href="#earn"
+              <Link
+                to="/provider"
                 className="inline-flex items-center justify-center rounded-xl bg-gradient-brand px-6 py-3 text-sm font-semibold text-primary-foreground shadow-brand transition-transform hover:-translate-y-0.5"
               >
-                See How You Earn →
-              </a>
+                Become a Provider →
+              </Link>
+              <Link
+                to="/auth"
+                search={{ mode: "signup", role: "user" }}
+                className="inline-flex items-center justify-center rounded-xl border border-[color:var(--brand-violet)]/40 bg-[color:var(--brand-violet)]/8 px-6 py-3 text-sm font-semibold text-[color:var(--brand-navy)] shadow-card transition-transform hover:-translate-y-0.5"
+              >
+                Become a User
+              </Link>
+              <Link
+                to="/chat"
+                className="inline-flex items-center justify-center rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-[color:var(--brand-navy)] shadow-card transition-colors hover:border-[color:var(--brand-violet)]/50"
+              >
+                Open Chat
+              </Link>
+
               <a
                 href="#stack"
                 className="inline-flex items-center justify-center rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-[color:var(--brand-navy)] shadow-card transition-colors hover:border-[color:var(--brand-violet)]/50"
@@ -517,24 +552,25 @@ function Landing() {
           lead="Every subscription dollar flows into the Provider Reward Pool. The more users subscribe, the larger the pool — and the more every provider earns."
         >
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {[
+            {([
               {
-                name: "Free", price: "$0", period: "forever",
+                name: "Free", price: "$0", period: "forever", code: "free" as const,
                 feats: ["50K tokens / month", "Community models only", "Basic chat interface", "1 active session"],
               },
               {
-                name: "Pro", price: "$19", period: "per month", featured: true,
+                name: "Pro", price: "$19", period: "per month", featured: true, code: "pro" as const,
                 feats: ["2M tokens / month", "All models + Claude, Codex, OpenRouter", "AI Code IDE (Monaco)", "Image generation", "API key management", "File context / RAG"],
               },
               {
-                name: "Team", price: "$49", period: "per seat / month",
+                name: "Team", price: "$49", period: "per seat / month", code: "max" as const,
                 feats: ["10M tokens / month", "Shared workspaces", "Usage analytics dashboard", "Priority model routing", "SSO / team admin"],
               },
               {
                 name: "Enterprise", price: "Custom", period: "annual contract",
                 feats: ["Unlimited tokens", "Dedicated model SLA", "On-prem deployment", "Private model hosting", "99.99% uptime SLA", "White-label option"],
               },
-            ].map((t) => (
+            ] as Array<{ name: string; price: string; period: string; featured?: boolean; code?: "free" | "pro" | "max"; feats: string[] }>).map((t) => (
+
               <div
                 key={t.name}
                 className={`relative flex flex-col rounded-2xl border bg-card p-6 shadow-card transition-all hover:-translate-y-1 ${
@@ -563,7 +599,19 @@ function Landing() {
                     </li>
                   ))}
                 </ul>
+                <Link
+                  to="/auth"
+                  search={{ mode: "signup", role: "user", ...(t.code ? { plan: t.code } : {}) }}
+                  className={`mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform hover:-translate-y-0.5 ${
+                    t.featured
+                      ? "bg-gradient-brand text-primary-foreground shadow-brand"
+                      : "border border-border bg-card text-[color:var(--brand-navy)] shadow-card"
+                  }`}
+                >
+                  {t.code ? "Create account & subscribe" : "Contact sales"}
+                </Link>
               </div>
+
             ))}
           </div>
         </Section>
@@ -848,18 +896,19 @@ function Landing() {
                   from real subscription revenue — paid out monthly in real money.
                 </p>
                 <div className="mt-7 flex flex-wrap justify-center gap-3">
-                  <a
-                    href="#earn"
+                  <Link
+                    to="/provider"
                     className="inline-flex items-center justify-center rounded-xl bg-background px-6 py-3 text-sm font-semibold text-[color:var(--brand-navy)] shadow-card transition-transform hover:-translate-y-0.5"
                   >
                     Become a Provider
-                  </a>
+                  </Link>
                   <a
                     href="#plans"
                     className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-primary-foreground backdrop-blur transition-colors hover:bg-white/20"
                   >
                     Explore Plans
                   </a>
+
                 </div>
               </div>
             </div>

@@ -14,7 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, KeyRound, LogOut, Plus, Trash2 } from "lucide-react";
+import { claimRole } from "@/lib/roles.functions";
+import { Copy, KeyRound, LogOut, MessageSquare, Plus, ShieldCheck, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -54,6 +55,7 @@ function Dashboard() {
     model_name: "",
     auth_header: "",
     price: "0",
+    offered: "0",
   });
 
   const invalidate = (key: string) => queryClient.invalidateQueries({ queryKey: [key] });
@@ -85,11 +87,12 @@ function Dashboard() {
           model_name: form.model_name || undefined,
           auth_header: form.auth_header || undefined,
           price_per_million_tokens_cents: Math.round(Number(form.price || 0) * 100),
+          offered_monthly_tokens: Math.round(Number(form.offered || 0)),
           is_public: true,
         },
       }),
     onSuccess: () => {
-      setForm({ name: "", tagline: "", endpoint_url: "", model_name: "", auth_header: "", price: "0" });
+      setForm({ name: "", tagline: "", endpoint_url: "", model_name: "", auth_header: "", price: "0", offered: "0" });
       invalidate("listings");
     },
     onError: fail,
@@ -119,6 +122,15 @@ function Dashboard() {
     navigate({ to: "/auth", replace: true });
   }
 
+  const roles: string[] = account.data?.roles ?? [];
+  const isAdmin = roles.includes("admin");
+  const isProvider = isAdmin || roles.includes("provider");
+  const becomeProvider = useMutation({
+    mutationFn: () => claimRole({ data: { role: "provider" } }),
+    onSuccess: () => invalidate("account"),
+    onError: fail,
+  });
+
   const plan = account.data?.subscription?.plan;
   const allowance = plan?.monthly_token_allowance ?? 0;
   const used = account.data?.usage?.[0]?.tokens_used ?? 0;
@@ -135,6 +147,18 @@ function Dashboard() {
             <span className="hidden text-sm text-muted-foreground sm:inline">
               {account.data?.profile?.display_name ?? account.data?.profile?.email}
             </span>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/chat">
+                <MessageSquare className="mr-2 size-4" /> Chat
+              </Link>
+            </Button>
+            {isAdmin && (
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/admin">
+                  <ShieldCheck className="mr-2 size-4" /> Admin
+                </Link>
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="mr-2 size-4" /> Sign out
             </Button>
@@ -263,7 +287,27 @@ function Dashboard() {
           </Card>
         </section>
 
+        {/* provider onboarding */}
+        {!isProvider && (
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display">Host your own AI</CardTitle>
+                <CardDescription>
+                  Become a provider to publish your model, offer your own monthly token capacity and earn revenue.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => becomeProvider.mutate()} disabled={becomeProvider.isPending}>
+                  Become a provider
+                </Button>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
         {/* submissions */}
+        {isProvider && (
         <section className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
@@ -335,6 +379,18 @@ function Dashboard() {
                   </div>
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="ai-offered">Monthly tokens you offer</Label>
+                  <Input
+                    id="ai-offered"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={form.offered}
+                    onChange={(e) => setForm({ ...form, offered: e.target.value })}
+                    placeholder="5000000"
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="ai-auth">Endpoint auth header (encrypted)</Label>
                   <Input
                     id="ai-auth"
@@ -381,6 +437,7 @@ function Dashboard() {
             </CardContent>
           </Card>
         </section>
+        )}
 
         {/* recent calls */}
         <section>
