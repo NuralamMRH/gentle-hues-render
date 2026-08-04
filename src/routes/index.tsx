@@ -106,16 +106,18 @@ function Landing() {
             </span>
             <Link
               to="/auth"
+              search={{ mode: "signin" }}
               className="hidden sm:inline-flex items-center rounded-lg border border-border px-3 py-2 text-[13px] font-semibold text-foreground transition-colors hover:bg-muted"
             >
               Sign in
             </Link>
             <Link
-              to="/auth"
+              to="/provider"
               className="hidden sm:inline-flex items-center rounded-lg bg-gradient-brand px-4 py-2 text-[13px] font-semibold text-primary-foreground shadow-brand transition-transform hover:-translate-y-0.5"
             >
-              Start Earning
+              Become a Provider
             </Link>
+
 
             <button
               type="button"
