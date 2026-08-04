@@ -1,24 +1,33 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { claimRole } from "@/lib/roles.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
+const SearchSchema = z.object({
+  mode: z.enum(["signin", "signup"]).optional(),
+  role: z.enum(["user", "provider"]).optional(),
+  plan: z.enum(["free", "pro", "max"]).optional(),
+});
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>) => SearchSchema.parse(search),
   head: () => ({
     meta: [
-      { title: "Sign in — rancod.ai compute network" },
+      { title: "Sign in or register — rancod.ai compute network" },
       {
         name: "description",
         content:
-          "Sign in or create a rancod.ai account to host your own AI, call community models and manage your token plan.",
+          "Create a rancod.ai account as a user or a provider: chat with community AI models, host your own and manage your token plan.",
       },
       { property: "og:title", content: "Sign in — rancod.ai" },
-      { property: "og:description", content: "Access your rancod.ai provider dashboard, API keys and token usage." },
+      { property: "og:description", content: "Access your rancod.ai dashboard, API keys and token usage." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -28,7 +37,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const search = Route.useSearch();
+  const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -36,15 +46,27 @@ function AuthPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const wantsProvider = search.role === "provider";
+
   useEffect(() => {
+    async function afterSession() {
+      if (wantsProvider) {
+        try {
+          await claimRole({ data: { role: "provider" } });
+        } catch {
+          /* role already held */
+        }
+      }
+      navigate({ to: "/dashboard", replace: true });
+    }
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
+      if (data.session) void afterSession();
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate({ to: "/dashboard", replace: true });
+      if (session) void afterSession();
     });
     return () => sub.subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, wantsProvider]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -81,12 +103,14 @@ function AuthPage() {
       <Card className="w-full max-w-md border-border/70 shadow-lg">
         <CardHeader className="space-y-2 text-center">
           <CardTitle className="font-display text-2xl">
-            {mode === "signin" ? "Welcome back" : "Create your account"}
+            {mode === "signin" ? "Welcome back" : wantsProvider ? "Create a provider account" : "Create your account"}
           </CardTitle>
           <CardDescription>
             {mode === "signin"
               ? "Sign in to manage your AI, keys and token usage."
-              : "Join the rancod.ai compute network in under a minute."}
+              : wantsProvider
+                ? "Host your AI, offer your own tokens and earn from real revenue."
+                : "Chat with community models and subscribe to a token plan."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -139,7 +163,7 @@ function AuthPage() {
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
+              {mode === "signin" ? "Sign in" : wantsProvider ? "Create provider account" : "Create account"}
             </Button>
           </form>
 

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProviderRouteImport } from './routes/provider'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -16,6 +17,11 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api/public/webhooks/stripe'
 import { Route as ApiPublicV1ChatRouteImport } from './routes/api/public/v1/chat'
 
+const ProviderRoute = ProviderRouteImport.update({
+  id: '/provider',
+  path: '/provider',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -49,6 +55,7 @@ const ApiPublicV1ChatRoute = ApiPublicV1ChatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/provider': typeof ProviderRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/api/public/v1/chat': typeof ApiPublicV1ChatRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
@@ -56,6 +63,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/provider': typeof ProviderRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/api/public/v1/chat': typeof ApiPublicV1ChatRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
@@ -65,6 +73,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/provider': typeof ProviderRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/api/public/v1/chat': typeof ApiPublicV1ChatRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
@@ -74,6 +83,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/provider'
     | '/dashboard'
     | '/api/public/v1/chat'
     | '/api/public/webhooks/stripe'
@@ -81,6 +91,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/provider'
     | '/dashboard'
     | '/api/public/v1/chat'
     | '/api/public/webhooks/stripe'
@@ -89,6 +100,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/provider'
     | '/_authenticated/dashboard'
     | '/api/public/v1/chat'
     | '/api/public/webhooks/stripe'
@@ -98,12 +110,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ProviderRoute: typeof ProviderRoute
   ApiPublicV1ChatRoute: typeof ApiPublicV1ChatRoute
   ApiPublicWebhooksStripeRoute: typeof ApiPublicWebhooksStripeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/provider': {
+      id: '/provider'
+      path: '/provider'
+      fullPath: '/provider'
+      preLoaderRoute: typeof ProviderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -164,6 +184,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ProviderRoute: ProviderRoute,
   ApiPublicV1ChatRoute: ApiPublicV1ChatRoute,
   ApiPublicWebhooksStripeRoute: ApiPublicWebhooksStripeRoute,
 }
