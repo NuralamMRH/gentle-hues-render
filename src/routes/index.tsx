@@ -517,24 +517,25 @@ function Landing() {
           lead="Every subscription dollar flows into the Provider Reward Pool. The more users subscribe, the larger the pool — and the more every provider earns."
         >
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {[
+            {([
               {
-                name: "Free", price: "$0", period: "forever",
+                name: "Free", price: "$0", period: "forever", code: "free" as const,
                 feats: ["50K tokens / month", "Community models only", "Basic chat interface", "1 active session"],
               },
               {
-                name: "Pro", price: "$19", period: "per month", featured: true,
+                name: "Pro", price: "$19", period: "per month", featured: true, code: "pro" as const,
                 feats: ["2M tokens / month", "All models + Claude, Codex, OpenRouter", "AI Code IDE (Monaco)", "Image generation", "API key management", "File context / RAG"],
               },
               {
-                name: "Team", price: "$49", period: "per seat / month",
+                name: "Team", price: "$49", period: "per seat / month", code: "max" as const,
                 feats: ["10M tokens / month", "Shared workspaces", "Usage analytics dashboard", "Priority model routing", "SSO / team admin"],
               },
               {
                 name: "Enterprise", price: "Custom", period: "annual contract",
                 feats: ["Unlimited tokens", "Dedicated model SLA", "On-prem deployment", "Private model hosting", "99.99% uptime SLA", "White-label option"],
               },
-            ].map((t) => (
+            ] as Array<{ name: string; price: string; period: string; featured?: boolean; code?: "free" | "pro" | "max"; feats: string[] }>).map((t) => (
+
               <div
                 key={t.name}
                 className={`relative flex flex-col rounded-2xl border bg-card p-6 shadow-card transition-all hover:-translate-y-1 ${
