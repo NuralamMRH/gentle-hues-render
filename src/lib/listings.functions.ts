@@ -5,7 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 
 const PUBLIC_COLUMNS =
-  "id, slug, name, tagline, description, category, tags, model_name, context_length, price_per_million_tokens_cents, is_online, last_heartbeat_at, created_at";
+  "id, slug, name, tagline, description, category, tags, model_name, context_length, price_per_million_tokens_cents, offered_monthly_tokens, is_online, last_heartbeat_at, created_at";
 
 function publicClient() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
@@ -53,6 +53,7 @@ const SubmissionInput = z.object({
   endpoint_url: z.string().url().max(500),
   auth_header: z.string().max(500).optional(),
   price_per_million_tokens_cents: z.number().int().min(0).max(1_000_000).default(0),
+  offered_monthly_tokens: z.number().int().min(0).max(10_000_000_000).default(0),
   is_public: z.boolean().default(true),
 });
 
@@ -95,7 +96,7 @@ export const getMyListings = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("ai_listings")
       .select(
-        "id, slug, name, tagline, category, tags, model_name, endpoint_url, status, is_public, is_online, price_per_million_tokens_cents, review_notes, created_at",
+        "id, slug, name, tagline, category, tags, model_name, endpoint_url, status, is_public, is_online, price_per_million_tokens_cents, offered_monthly_tokens, review_notes, created_at",
       )
       .eq("owner_id", context.userId)
       .order("created_at", { ascending: false });
