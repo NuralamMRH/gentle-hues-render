@@ -68,7 +68,7 @@ function ChatPage() {
             onChange={(e) => setModel(e.target.value)}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           >
-            {(models.data ?? []).map((m) => (
+            {options.map((m) => (
               <option key={m.slug} value={m.slug}>
                 {m.name}
               </option>
@@ -78,7 +78,8 @@ function ChatPage() {
       </header>
 
       <div className="mx-auto max-w-4xl px-6 py-8">
-        {(models.data ?? []).length === 0 ? (
+        {options.length === 0 ? (
+
           <Card>
             <CardHeader>
               <CardTitle className="font-display">No models online yet</CardTitle>
