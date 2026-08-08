@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { listPublicListings } from "@/lib/listings.functions";
 import { chatWithModel } from "@/lib/chat.functions";
+import { DEFAULT_MODELS } from "@/lib/default-models";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +39,12 @@ function ChatPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const activeModel = model || models.data?.[0]?.slug || "";
+  const options = [
+    ...DEFAULT_MODELS.map((m) => ({ slug: m.slug, name: m.name })),
+    ...(models.data ?? []).map((m) => ({ slug: m.slug, name: m.name })),
+  ];
+  const activeModel = model || options[0]?.slug || "";
+
 
   const ask = useMutation({
     mutationFn: async (text: string) => {
@@ -61,7 +68,7 @@ function ChatPage() {
             onChange={(e) => setModel(e.target.value)}
             className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
           >
-            {(models.data ?? []).map((m) => (
+            {options.map((m) => (
               <option key={m.slug} value={m.slug}>
                 {m.name}
               </option>
@@ -71,7 +78,8 @@ function ChatPage() {
       </header>
 
       <div className="mx-auto max-w-4xl px-6 py-8">
-        {(models.data ?? []).length === 0 ? (
+        {options.length === 0 ? (
+
           <Card>
             <CardHeader>
               <CardTitle className="font-display">No models online yet</CardTitle>

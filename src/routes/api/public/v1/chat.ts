@@ -70,6 +70,35 @@ export const Route = createFileRoute("/api/public/v1/chat")({
           return json({ error: "Monthly token allowance exhausted. Upgrade your plan." }, 402);
         }
 
+        const { findDefaultModel } = await import("@/lib/default-models");
+        if (findDefaultModel(payload.model)) {
+          const { runOpenRouterChat } = await import("@/lib/openrouter.server");
+          let res;
+          try {
+            res = await runOpenRouterChat(payload.model, payload.messages, {
+              ...(payload.max_tokens !== undefined ? { max_tokens: payload.max_tokens } : {}),
+              ...(payload.temperature !== undefined ? { temperature: payload.temperature } : {}),
+            });
+          } catch (error) {
+            return json({ error: error instanceof Error ? error.message : "Built-in model failed" }, 502);
+          }
+          await Promise.all([
+            supabaseAdmin.from("token_usage").insert({
+              user_id: keyRow.user_id,
+              listing_id: null,
+              api_key_id: keyRow.id,
+              input_tokens: res.inputTokens,
+              output_tokens: res.outputTokens,
+              total_tokens: res.totalTokens,
+              cost_cents: (res.totalTokens / 1_000_000) * res.pricePerMillionCents,
+              latency_ms: Date.now() - started,
+              status_code: res.statusCode,
+            }),
+            supabaseAdmin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", keyRow.id),
+          ]);
+          return json({ ...res.raw, rancod: { model: payload.model, total_tokens: res.totalTokens } });
+        }
+
         const { data: listing } = await supabaseAdmin
           .from("ai_listings")
           .select("id, slug, endpoint_url, auth_header_ciphertext, model_name, price_per_million_tokens_cents, status, is_public")
@@ -78,6 +107,7 @@ export const Route = createFileRoute("/api/public/v1/chat")({
         if (!listing || listing.status !== "approved" || !listing.is_public) {
           return json({ error: `Unknown or unavailable model '${payload.model}'` }, 404);
         }
+
 
         const headers: Record<string, string> = { "content-type": "application/json" };
         if (listing.auth_header_ciphertext) {
