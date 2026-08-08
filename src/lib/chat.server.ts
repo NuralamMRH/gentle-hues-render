@@ -1,5 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { decryptSecret } from "@/lib/secure.server";
+import { findDefaultModel } from "@/lib/default-models";
+import { runOpenRouterChat } from "@/lib/openrouter.server";
 
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -31,6 +33,23 @@ export async function runChat(userId: string, slug: string, messages: ChatMessag
   if (Number(period?.tokens_used ?? 0) >= allowance) {
     throw new Error("Monthly token allowance exhausted. Upgrade your plan to keep chatting.");
   }
+
+  // Built-in OpenRouter-backed models (default chat + testing).
+  if (findDefaultModel(slug)) {
+    const res = await runOpenRouterChat(slug, messages);
+    await supabaseAdmin.from("token_usage").insert({
+      user_id: userId,
+      listing_id: null,
+      input_tokens: res.inputTokens,
+      output_tokens: res.outputTokens,
+      total_tokens: res.totalTokens,
+      cost_cents: (res.totalTokens / 1_000_000) * res.pricePerMillionCents,
+      latency_ms: Date.now() - started,
+      status_code: res.statusCode,
+    });
+    return { reply: res.reply, total_tokens: res.totalTokens, model: slug };
+  }
+
 
   const { data: listing } = await supabaseAdmin
     .from("ai_listings")
