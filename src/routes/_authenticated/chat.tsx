@@ -37,7 +37,12 @@ function ChatPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const activeModel = model || models.data?.[0]?.slug || "";
+  const options = [
+    ...DEFAULT_MODELS.map((m) => ({ slug: m.slug, name: m.name })),
+    ...(models.data ?? []).map((m) => ({ slug: m.slug, name: m.name })),
+  ];
+  const activeModel = model || options[0]?.slug || "";
+
 
   const ask = useMutation({
     mutationFn: async (text: string) => {
