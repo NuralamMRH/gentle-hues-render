@@ -1,6 +1,7 @@
 import { findDefaultModel } from "./default-models";
+import { textOf, type ChatMessage } from "./chat-types";
 
-export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
+export type { ChatMessage };
 
 export type OpenRouterResult = {
   raw: Record<string, unknown>;
@@ -68,7 +69,7 @@ export async function runOpenRouterChat(
   const choices = (raw["choices"] ?? []) as Array<{ message?: { content?: string } }>;
   const reply = choices[0]?.message?.content ?? "";
   const usage = (raw["usage"] ?? {}) as Record<string, number | undefined>;
-  const inputTokens = usage["prompt_tokens"] ?? messages.reduce((sum, m) => sum + estimateTokens(m.content), 0);
+  const inputTokens = usage["prompt_tokens"] ?? messages.reduce((sum, m) => sum + estimateTokens(textOf(m.content)), 0);
   const outputTokens = usage["completion_tokens"] ?? estimateTokens(reply);
   const totalTokens = usage["total_tokens"] ?? inputTokens + outputTokens;
 

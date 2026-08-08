@@ -17,7 +17,7 @@ const estimateTokens = (text: string) => Math.max(1, Math.ceil(text.length / 4))
 /** Turns stored messages (with private attachment paths) into provider-ready messages. */
 export async function buildProviderMessages(messages: StoredMessage[]): Promise<ChatMessage[]> {
   const paths = messages.flatMap((m) => (m.attachments ?? []).map((a) => a.path));
-  let signed: Record<string, string> = {};
+  const signed: Record<string, string> = {};
   if (paths.length) {
     const { data } = await supabaseAdmin.storage.from("chat-uploads").createSignedUrls(paths, 3600);
     for (const item of data ?? []) {
@@ -220,9 +220,12 @@ export async function sendThreadMessage(params: {
   });
   if (replyError) throw new Error(replyError.message);
 
-  const patch: Record<string, unknown> = { model_slug: model, updated_at: new Date().toISOString() };
+  const patch: { model_slug: string; updated_at: string; title?: string } = {
+    model_slug: model,
+    updated_at: new Date().toISOString(),
+  };
   if (thread.title === "New chat" && text.trim()) {
-    patch["title"] = text.trim().slice(0, 60);
+    patch.title = text.trim().slice(0, 60);
   }
   await supabaseAdmin.from("chat_threads").update(patch).eq("id", threadId);
 
