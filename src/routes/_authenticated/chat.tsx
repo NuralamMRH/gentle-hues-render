@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { listPublicListings } from "@/lib/listings.functions";
 import { chatWithModel } from "@/lib/chat.functions";
+import { DEFAULT_MODELS } from "@/lib/default-models";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
