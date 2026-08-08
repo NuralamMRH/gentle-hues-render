@@ -23,12 +23,14 @@ export type Database = {
           description: string | null
           endpoint_url: string
           id: string
+          input_modalities: string[]
           is_online: boolean
           is_public: boolean
           last_heartbeat_at: string | null
           model_name: string | null
           name: string
           offered_monthly_tokens: number
+          output_modalities: string[]
           owner_id: string
           price_per_million_tokens_cents: number
           review_notes: string | null
@@ -39,6 +41,7 @@ export type Database = {
           tagline: string | null
           tags: string[]
           updated_at: string
+          use_cases: string | null
         }
         Insert: {
           auth_header_ciphertext?: string | null
@@ -48,12 +51,14 @@ export type Database = {
           description?: string | null
           endpoint_url: string
           id?: string
+          input_modalities?: string[]
           is_online?: boolean
           is_public?: boolean
           last_heartbeat_at?: string | null
           model_name?: string | null
           name: string
           offered_monthly_tokens?: number
+          output_modalities?: string[]
           owner_id: string
           price_per_million_tokens_cents?: number
           review_notes?: string | null
@@ -64,6 +69,7 @@ export type Database = {
           tagline?: string | null
           tags?: string[]
           updated_at?: string
+          use_cases?: string | null
         }
         Update: {
           auth_header_ciphertext?: string | null
@@ -73,12 +79,14 @@ export type Database = {
           description?: string | null
           endpoint_url?: string
           id?: string
+          input_modalities?: string[]
           is_online?: boolean
           is_public?: boolean
           last_heartbeat_at?: string | null
           model_name?: string | null
           name?: string
           offered_monthly_tokens?: number
+          output_modalities?: string[]
           owner_id?: string
           price_per_million_tokens_cents?: number
           review_notes?: string | null
@@ -89,6 +97,7 @@ export type Database = {
           tagline?: string | null
           tags?: string[]
           updated_at?: string
+          use_cases?: string | null
         }
         Relationships: []
       }
@@ -121,6 +130,77 @@ export type Database = {
           last_used_at?: string | null
           name?: string
           revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          attachments: Json
+          content: string
+          created_at: string
+          id: string
+          model_slug: string | null
+          role: string
+          thread_id: string
+          total_tokens: number
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json
+          content?: string
+          created_at?: string
+          id?: string
+          model_slug?: string | null
+          role: string
+          thread_id: string
+          total_tokens?: number
+          user_id: string
+        }
+        Update: {
+          attachments?: Json
+          content?: string
+          created_at?: string
+          id?: string
+          model_slug?: string | null
+          role?: string
+          thread_id?: string
+          total_tokens?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_threads: {
+        Row: {
+          created_at: string
+          id: string
+          model_slug: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          model_slug?: string | null
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          model_slug?: string | null
+          title?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
