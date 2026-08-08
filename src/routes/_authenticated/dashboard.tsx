@@ -5,6 +5,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyAccount, getMyUsage } from "@/lib/account.functions";
 import { getMyListings, submitListing, deleteMyListing } from "@/lib/listings.functions";
+import { MODALITIES } from "@/lib/chat-types";
 import { listApiKeys, createApiKey, revokeApiKey } from "@/lib/api-keys.functions";
 import { listPlans, createCheckoutSession, createBillingPortalSession } from "@/lib/billing.functions";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,9 @@ function Dashboard() {
     auth_header: "",
     price: "0",
     offered: "0",
+    use_cases: "",
+    inputs: ["text"] as string[],
+    outputs: ["text"] as string[],
   });
 
   const invalidate = (key: string) => queryClient.invalidateQueries({ queryKey: [key] });
@@ -88,11 +92,25 @@ function Dashboard() {
           auth_header: form.auth_header || undefined,
           price_per_million_tokens_cents: Math.round(Number(form.price || 0) * 100),
           offered_monthly_tokens: Math.round(Number(form.offered || 0)),
+          use_cases: form.use_cases || undefined,
+          input_modalities: form.inputs as ("text" | "image" | "audio" | "video" | "file")[],
+          output_modalities: form.outputs as ("text" | "image" | "audio" | "video" | "file")[],
           is_public: true,
         },
       }),
     onSuccess: () => {
-      setForm({ name: "", tagline: "", endpoint_url: "", model_name: "", auth_header: "", price: "0", offered: "0" });
+      setForm({
+        name: "",
+        tagline: "",
+        endpoint_url: "",
+        model_name: "",
+        auth_header: "",
+        price: "0",
+        offered: "0",
+        use_cases: "",
+        inputs: ["text"],
+        outputs: ["text"],
+      });
       invalidate("listings");
     },
     onError: fail,
@@ -389,6 +407,49 @@ function Dashboard() {
                     onChange={(e) => setForm({ ...form, offered: e.target.value })}
                     placeholder="5000000"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ai-purpose">What is this AI for?</Label>
+                  <Textarea
+                    id="ai-purpose"
+                    rows={2}
+                    value={form.use_cases}
+                    onChange={(e) => setForm({ ...form, use_cases: e.target.value })}
+                    placeholder="Code assistance, image generation, audio transcription…"
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {(["inputs", "outputs"] as const).map((field) => (
+                    <div key={field} className="space-y-2">
+                      <Label>{field === "inputs" ? "It can accept" : "It can reply with"}</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {MODALITIES.map((mod) => {
+                          const on = form[field].includes(mod);
+                          return (
+                            <button
+                              key={mod}
+                              type="button"
+                              onClick={() =>
+                                setForm({
+                                  ...form,
+                                  [field]: on
+                                    ? form[field].filter((m) => m !== mod) 
+                                    : [...form[field], mod],
+                                })
+                              }
+                              className={`rounded-full border px-3 py-1 text-xs capitalize ${
+                                on
+                                  ? "border-transparent bg-gradient-brand text-primary-foreground"
+                                  : "border-border text-muted-foreground"
+                              }`}
+                            >
+                              {mod}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="ai-auth">Endpoint auth header (encrypted)</Label>
