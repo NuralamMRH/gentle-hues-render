@@ -2,19 +2,33 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const ChatInput = z.object({
-  model: z.string().min(1).max(120),
-  messages: z
-    .array(z.object({ role: z.enum(["system", "user", "assistant"]), content: z.string().min(1).max(20_000) }))
-    .min(1)
-    .max(40),
+const AttachmentInput = z.object({
+  path: z.string().min(1).max(400),
+  mime: z.string().max(120),
+  name: z.string().max(200),
 });
 
-/** Send a conversation to an approved community-hosted model. */
-export const chatWithModel = createServerFn({ method: "POST" })
+const SendInput = z.object({
+  threadId: z.string().uuid(),
+  model: z.string().min(1).max(120),
+  text: z.string().max(20_000),
+  attachments: z.array(AttachmentInput).max(6).default([]),
+});
+
+/** Sends a turn in a stored conversation and returns the assistant reply. */
+export const sendMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => ChatInput.parse(input))
+  .inputValidator((input: unknown) => SendInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { runChat } = await import("./chat.server");
-    return runChat(context.userId, data.model, data.messages);
+    if (!data.text.trim() && data.attachments.length === 0) {
+      throw new Error("Write a message or attach a file.");
+    }
+    const { sendThreadMessage } = await import("./chat.server");
+    return sendThreadMessage({
+      userId: context.userId,
+      threadId: data.threadId,
+      model: data.model,
+      text: data.text,
+      attachments: data.attachments,
+    });
   });
