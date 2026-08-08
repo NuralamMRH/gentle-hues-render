@@ -2,10 +2,45 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { decryptSecret } from "@/lib/secure.server";
 import { findDefaultModel } from "@/lib/default-models";
 import { runOpenRouterChat } from "@/lib/openrouter.server";
+import { modalityForMime, textOf, type ChatMessage, type ContentPart } from "@/lib/chat-types";
 
-export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
+export type { ChatMessage };
+
+export type StoredMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
+  attachments?: { path: string; mime: string; name: string }[];
+};
 
 const estimateTokens = (text: string) => Math.max(1, Math.ceil(text.length / 4));
+
+/** Turns stored messages (with private attachment paths) into provider-ready messages. */
+export async function buildProviderMessages(messages: StoredMessage[]): Promise<ChatMessage[]> {
+  const paths = messages.flatMap((m) => (m.attachments ?? []).map((a) => a.path));
+  let signed: Record<string, string> = {};
+  if (paths.length) {
+    const { data } = await supabaseAdmin.storage.from("chat-uploads").createSignedUrls(paths, 3600);
+    for (const item of data ?? []) {
+      if (item.path && item.signedUrl) signed[item.path] = item.signedUrl;
+    }
+  }
+
+  return messages.map((m) => {
+    if (!m.attachments?.length) return { role: m.role, content: m.content };
+    const parts: ContentPart[] = [{ type: "text", text: m.content || "" }];
+    for (const a of m.attachments) {
+      const url = signed[a.path];
+      if (!url) continue;
+      const kind = modalityForMime(a.mime);
+      if (kind === "image") parts.push({ type: "image_url", image_url: { url } });
+      else if (kind === "audio")
+        parts.push({ type: "input_audio", input_audio: { url, format: a.mime.split("/")[1] ?? "mp3" } });
+      else if (kind === "video") parts.push({ type: "video_url", video_url: { url } });
+      else parts.push({ type: "file", file: { filename: a.name, file_url: url } });
+    }
+    return { role: m.role, content: parts };
+  });
+}
 
 /** Runs an inference request against an approved community model and meters it. */
 export async function runChat(userId: string, slug: string, messages: ChatMessage[]) {
@@ -50,10 +85,11 @@ export async function runChat(userId: string, slug: string, messages: ChatMessag
     return { reply: res.reply, total_tokens: res.totalTokens, model: slug };
   }
 
-
   const { data: listing } = await supabaseAdmin
     .from("ai_listings")
-    .select("id, slug, endpoint_url, auth_header_ciphertext, model_name, price_per_million_tokens_cents, status, is_public")
+    .select(
+      "id, slug, endpoint_url, auth_header_ciphertext, model_name, price_per_million_tokens_cents, status, is_public, input_modalities",
+    )
     .eq("slug", slug)
     .maybeSingle();
   if (!listing || listing.status !== "approved" || !listing.is_public) {
@@ -104,7 +140,8 @@ export async function runChat(userId: string, slug: string, messages: ChatMessag
   const reply = choices[0]?.message?.content ?? "";
 
   const usage = (result["usage"] ?? {}) as Record<string, number | undefined>;
-  const inputTokens = usage["prompt_tokens"] ?? messages.reduce((sum, m) => sum + estimateTokens(m.content), 0);
+  const inputTokens =
+    usage["prompt_tokens"] ?? messages.reduce((sum, m) => sum + estimateTokens(textOf(m.content)), 0);
   const outputTokens = usage["completion_tokens"] ?? estimateTokens(reply);
   const totalTokens = usage["total_tokens"] ?? inputTokens + outputTokens;
 
@@ -126,4 +163,68 @@ export async function runChat(userId: string, slug: string, messages: ChatMessag
   ]);
 
   return { reply, total_tokens: totalTokens, model: listing.slug };
+}
+
+/** Persists a user turn, runs inference with full thread history, stores the reply. */
+export async function sendThreadMessage(params: {
+  userId: string;
+  threadId: string;
+  model: string;
+  text: string;
+  attachments: { path: string; mime: string; name: string }[];
+}) {
+  const { userId, threadId, model, text, attachments } = params;
+
+  const { data: thread } = await supabaseAdmin
+    .from("chat_threads")
+    .select("id, title")
+    .eq("id", threadId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!thread) throw new Error("Conversation not found");
+
+  const { error: insertError } = await supabaseAdmin.from("chat_messages").insert({
+    thread_id: threadId,
+    user_id: userId,
+    role: "user",
+    content: text,
+    attachments,
+    model_slug: model,
+  });
+  if (insertError) throw new Error(insertError.message);
+
+  const { data: history, error: histError } = await supabaseAdmin
+    .from("chat_messages")
+    .select("role, content, attachments")
+    .eq("thread_id", threadId)
+    .order("created_at", { ascending: true })
+    .limit(60);
+  if (histError) throw new Error(histError.message);
+
+  const stored: StoredMessage[] = (history ?? []).map((m) => ({
+    role: m.role as StoredMessage["role"],
+    content: m.content,
+    attachments: (m.attachments ?? []) as StoredMessage["attachments"],
+  }));
+
+  const providerMessages = await buildProviderMessages(stored);
+  const result = await runChat(userId, model, providerMessages);
+
+  const { error: replyError } = await supabaseAdmin.from("chat_messages").insert({
+    thread_id: threadId,
+    user_id: userId,
+    role: "assistant",
+    content: result.reply,
+    model_slug: model,
+    total_tokens: result.total_tokens,
+  });
+  if (replyError) throw new Error(replyError.message);
+
+  const patch: Record<string, unknown> = { model_slug: model, updated_at: new Date().toISOString() };
+  if (thread.title === "New chat" && text.trim()) {
+    patch["title"] = text.trim().slice(0, 60);
+  }
+  await supabaseAdmin.from("chat_threads").update(patch).eq("id", threadId);
+
+  return result;
 }
