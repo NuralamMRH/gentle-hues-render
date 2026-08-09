@@ -25,7 +25,7 @@ function ChatIndex() {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 text-center">
-      <img src={logo} alt="rancod.ai" className="size-14" />
+      <img src={logoAsset.url} alt="rancod.ai" className="size-14" />
       <div className="space-y-2">
         <h1 className="font-display text-2xl font-semibold text-[color:var(--brand-navy)]">
           Start a conversation
