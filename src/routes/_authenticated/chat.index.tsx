@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createThread } from "@/lib/chat-threads.functions";
 import { Button } from "@/components/ui/button";
 import { MessageSquarePlus } from "lucide-react";
-import logo from "@/assets/rancod-logo.png";
+import logoAsset from "@/assets/rancod-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/chat/")({
   component: ChatIndex,
