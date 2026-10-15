@@ -25,7 +25,7 @@ export async function runOpenRouterChat(
   if (!preset) throw new Error(`Unknown built-in model '${slug}'`);
 
   const isIntern = preset.provider === "intern";
-  const apiKey = isIntern ? process.env["OPENAI_API_KEY"] : process.env["OPENROUTER_API_KEY"];
+  const apiKey = isIntern ? (process.env["INTERN_API_KEY"] ?? process.env["OPENAI_API_KEY"]) : process.env["OPENROUTER_API_KEY"];
   if (!apiKey) throw new Error("The built-in AI provider is not configured.");
   const endpoint = isIntern
     ? "https://discovery-api.intern-ai.org.cn/v1/chat/completions"
