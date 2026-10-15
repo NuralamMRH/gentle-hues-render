@@ -3,6 +3,13 @@ import { decryptSecret } from "@/lib/secure.server";
 import { findDefaultModel } from "@/lib/default-models";
 import { runOpenRouterChat } from "@/lib/openrouter.server";
 import { modalityForMime, textOf, type ChatMessage, type ContentPart } from "@/lib/chat-types";
+import { TASK_SYSTEM, type TaskId } from "@/lib/model-tasks";
+import { decodeDataUrl, generateImage } from "@/lib/image-gen.server";
+
+const withTask = (messages: ChatMessage[], task?: TaskId): ChatMessage[] => {
+  const sys = task ? TASK_SYSTEM[task] : undefined;
+  return sys ? [{ role: "system", content: sys }, ...messages] : messages;
+};
 
 export type { ChatMessage };
 
@@ -43,7 +50,13 @@ export async function buildProviderMessages(messages: StoredMessage[]): Promise<
 }
 
 /** Runs an inference request against an approved community model and meters it. */
-export async function runChat(userId: string, slug: string, messages: ChatMessage[]) {
+export async function runChat(
+  userId: string,
+  slug: string,
+  inputMessages: ChatMessage[],
+  task?: TaskId,
+): Promise<{ reply: string; total_tokens: number; model: string; images?: string[] }> {
+  const messages = withTask(inputMessages, task);
   const started = Date.now();
 
   const periodStart = new Date();
@@ -70,7 +83,22 @@ export async function runChat(userId: string, slug: string, messages: ChatMessag
   }
 
   // Built-in OpenRouter-backed models (default chat + testing).
-  if (findDefaultModel(slug)) {
+  const preset = findDefaultModel(slug);
+  if (preset?.provider === "lovable") {
+    const img = await generateImage(preset.model, inputMessages);
+    await supabaseAdmin.from("token_usage").insert({
+      user_id: userId,
+      listing_id: null,
+      input_tokens: 0,
+      output_tokens: img.totalTokens,
+      total_tokens: img.totalTokens,
+      cost_cents: (img.totalTokens / 1_000_000) * preset.price_per_million_tokens_cents,
+      latency_ms: Date.now() - started,
+      status_code: 200,
+    });
+    return { reply: img.reply, total_tokens: img.totalTokens, model: slug, images: img.images };
+  }
+  if (preset) {
     const res = await runOpenRouterChat(slug, messages);
     await supabaseAdmin.from("token_usage").insert({
       user_id: userId,
@@ -114,6 +142,7 @@ export async function runChat(userId: string, slug: string, messages: ChatMessag
         model: listing.model_name ?? slug,
         messages,
         stream: false,
+        ...(task ? { rancod_task: task } : {}),
       }),
       signal: AbortSignal.timeout(120_000),
     });
@@ -172,8 +201,9 @@ export async function sendThreadMessage(params: {
   model: string;
   text: string;
   attachments: { path: string; mime: string; name: string }[];
+  task?: TaskId;
 }) {
-  const { userId, threadId, model, text, attachments } = params;
+  const { userId, threadId, model, text, attachments, task } = params;
 
   const { data: thread } = await supabaseAdmin
     .from("chat_threads")
@@ -208,13 +238,26 @@ export async function sendThreadMessage(params: {
   }));
 
   const providerMessages = await buildProviderMessages(stored);
-  const result = await runChat(userId, model, providerMessages);
+  const result = await runChat(userId, model, providerMessages, task);
+
+  const generated: { path: string; mime: string; name: string }[] = [];
+  for (const url of result.images ?? []) {
+    const decoded = decodeDataUrl(url);
+    if (!decoded) continue;
+    const ext = decoded.mime.split("/")[1] ?? "png";
+    const path = `${userId}/gen-${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabaseAdmin.storage
+      .from("chat-uploads")
+      .upload(path, decoded.bytes, { contentType: decoded.mime });
+    if (!error) generated.push({ path, mime: decoded.mime, name: `generated.${ext}` });
+  }
 
   const { error: replyError } = await supabaseAdmin.from("chat_messages").insert({
     thread_id: threadId,
     user_id: userId,
     role: "assistant",
     content: result.reply,
+    attachments: generated,
     model_slug: model,
     total_tokens: result.total_tokens,
   });
@@ -230,4 +273,19 @@ export async function sendThreadMessage(params: {
   await supabaseAdmin.from("chat_threads").update(patch).eq("id", threadId);
 
   return result;
+}
+
+/** One free, unsaved turn for signed-out visitors (built-in models only). */
+export async function runGuestChat(params: { model: string; task?: TaskId; text: string; images: string[] }) {
+  const preset = findDefaultModel(params.model);
+  if (!preset) throw new Error("Sign in to use community models.");
+  const content: ContentPart[] = [{ type: "text", text: params.text }];
+  for (const url of params.images) content.push({ type: "image_url", image_url: { url } });
+  const msgs: ChatMessage[] = [{ role: "user", content: params.images.length ? content : params.text }];
+  if (preset.provider === "lovable") {
+    const img = await generateImage(preset.model, msgs);
+    return { reply: img.reply, images: img.images };
+  }
+  const res = await runOpenRouterChat(params.model, withTask(msgs, params.task), { max_tokens: 1200 });
+  return { reply: res.reply, images: [] as string[] };
 }
