@@ -7,7 +7,19 @@ export type DefaultModel = {
   model: string;
   tagline: string;
   price_per_million_tokens_cents: number;
+  /** Upstream gateway: OpenRouter or Intern Discovery (OpenAI-compatible). */
+  provider?: "openrouter" | "intern";
 };
+
+export const INTERN_PREFIX = "intern/";
+const intern = (id: string, name: string, tagline: string): DefaultModel => ({
+  slug: `${INTERN_PREFIX}${id}`,
+  name: `${name} (built-in)`,
+  model: id,
+  tagline,
+  price_per_million_tokens_cents: 10,
+  provider: "intern",
+});
 
 export const DEFAULT_MODELS: DefaultModel[] = [
   {
@@ -31,6 +43,16 @@ export const DEFAULT_MODELS: DefaultModel[] = [
     tagline: "Open-weights workhorse",
     price_per_million_tokens_cents: 15,
   },
+  intern("deepseek-v4-flash-0731", "DeepSeek V4 Flash", "1M context reasoning"),
+  intern("deepseek-v4-flash-vision", "DeepSeek V4 Flash Vision", "Text + image understanding"),
+  intern("deepseek-v4-pro-0813", "DeepSeek V4 Pro", "Stronger reasoning & tools"),
+  intern("glm-5.3", "GLM 5.3", "1M context, tool calling"),
+  intern("kimi-k2.6", "Kimi K2.6", "Multimodal reasoning"),
+  intern("minimax-m3", "MiniMax M3", "Long-context reasoning"),
+  intern("qwen3.8-27b", "Qwen 3.8 27B", "Multimodal, efficient"),
+  intern("intern-s2", "Intern S2", "Scientific reasoning, images"),
+  intern("Agents-A1", "Agents A1", "Agentic, tool calling"),
+  intern("Atria-Dawn", "Atria Dawn", "512K scientific reasoning"),
 ];
 
 export const findDefaultModel = (slug: string) => DEFAULT_MODELS.find((m) => m.slug === slug);

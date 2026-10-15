@@ -24,18 +24,21 @@ export async function runOpenRouterChat(
   const preset = findDefaultModel(slug);
   if (!preset) throw new Error(`Unknown built-in model '${slug}'`);
 
-  const apiKey = process.env["OPENROUTER_API_KEY"];
-  if (!apiKey) throw new Error("OpenRouter is not configured.");
+  const isIntern = preset.provider === "intern";
+  const apiKey = isIntern ? (process.env["INTERN_API_KEY"] ?? process.env["OPENAI_API_KEY"]) : process.env["OPENROUTER_API_KEY"];
+  if (!apiKey) throw new Error("The built-in AI provider is not configured.");
+  const endpoint = isIntern
+    ? "https://discovery-api.intern-ai.org.cn/v1/chat/completions"
+    : "https://openrouter.ai/api/v1/chat/completions";
 
   let upstream: Response;
   try {
-    upstream = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    upstream = await fetch(endpoint, {
       method: "POST",
       headers: {
         "content-type": "application/json",
         authorization: `Bearer ${apiKey}`,
-        "HTTP-Referer": "https://rancod.ai",
-        "X-Title": "rancod.ai",
+        ...(isIntern ? {} : { "HTTP-Referer": "https://rancod.ai", "X-Title": "rancod.ai" }),
       },
       body: JSON.stringify({
         model: preset.model,
