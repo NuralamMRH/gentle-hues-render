@@ -16,6 +16,7 @@ import { Route as ChatRouteImport } from './routes/chat'
 import { Route as ProviderRouteImport } from './routes/provider'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 import { Route as ApiPublicV1ChatRouteImport } from './routes/api/public/v1/chat'
 import { Route as ApiPublicWebhooksStripeRouteImport } from './routes/api/public/webhooks/stripe'
 
@@ -53,6 +54,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ChatThreadIdRoute = ChatThreadIdRouteImport.update({
+  id: '/$threadId',
+  path: '/$threadId',
+  getParentRoute: () => ChatRoute,
+} as any)
 const ApiPublicV1ChatRoute = ApiPublicV1ChatRouteImport.update({
   id: '/api/public/v1/chat',
   path: '/api/public/v1/chat',
@@ -67,20 +73,22 @@ const ApiPublicWebhooksStripeRoute = ApiPublicWebhooksStripeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/chat': typeof ChatRoute
+  '/chat': typeof ChatRouteWithChildren
   '/provider': typeof ProviderRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/v1/chat': typeof ApiPublicV1ChatRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/chat': typeof ChatRoute
+  '/chat': typeof ChatRouteWithChildren
   '/provider': typeof ProviderRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/v1/chat': typeof ApiPublicV1ChatRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -89,10 +97,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/chat': typeof ChatRoute
+  '/chat': typeof ChatRouteWithChildren
   '/provider': typeof ProviderRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/v1/chat': typeof ApiPublicV1ChatRoute
   '/api/public/webhooks/stripe': typeof ApiPublicWebhooksStripeRoute
 }
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/provider'
     | '/admin'
     | '/dashboard'
+    | '/chat/$threadId'
     | '/api/public/v1/chat'
     | '/api/public/webhooks/stripe'
   fileRoutesByTo: FileRoutesByTo
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/provider'
     | '/admin'
     | '/dashboard'
+    | '/chat/$threadId'
     | '/api/public/v1/chat'
     | '/api/public/webhooks/stripe'
   id:
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '/provider'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
+    | '/chat/$threadId'
     | '/api/public/v1/chat'
     | '/api/public/webhooks/stripe'
   fileRoutesById: FileRoutesById
@@ -134,7 +146,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  ChatRoute: typeof ChatRoute
+  ChatRoute: typeof ChatRouteWithChildren
   ProviderRoute: typeof ProviderRoute
   ApiPublicV1ChatRoute: typeof ApiPublicV1ChatRoute
   ApiPublicWebhooksStripeRoute: typeof ApiPublicWebhooksStripeRoute
@@ -191,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/chat/$threadId': {
+      id: '/chat/$threadId'
+      path: '/$threadId'
+      fullPath: '/chat/$threadId'
+      preLoaderRoute: typeof ChatThreadIdRouteImport
+      parentRoute: typeof ChatRoute
+    }
     '/api/public/v1/chat': {
       id: '/api/public/v1/chat'
       path: '/api/public/v1/chat'
@@ -221,11 +240,21 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ChatRouteChildren {
+  ChatThreadIdRoute: typeof ChatThreadIdRoute
+}
+
+const ChatRouteChildren: ChatRouteChildren = {
+  ChatThreadIdRoute: ChatThreadIdRoute,
+}
+
+const ChatRouteWithChildren = ChatRoute._addFileChildren(ChatRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  ChatRoute: ChatRoute,
+  ChatRoute: ChatRouteWithChildren,
   ProviderRoute: ProviderRoute,
   ApiPublicV1ChatRoute: ApiPublicV1ChatRoute,
   ApiPublicWebhooksStripeRoute: ApiPublicWebhooksStripeRoute,
