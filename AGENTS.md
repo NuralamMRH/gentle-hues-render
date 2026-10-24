@@ -8,3 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+- Chat routes (/chat, /chat/$threadId) are public; signed-out visitors get one unsaved built-in-model answer via guestChat, then an auth modal. Why: try-before-signup funnel.
