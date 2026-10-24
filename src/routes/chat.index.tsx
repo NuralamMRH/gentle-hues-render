@@ -12,7 +12,7 @@ import { useModelOptions } from "@/hooks/use-model-options";
 import { Composer, coerceTask } from "@/components/chat/composer";
 import { MessageView } from "@/components/chat/message-view";
 import { AuthModal } from "@/components/chat/auth-modal";
-import { uploadChatFiles } from "./chat.$threadId";
+import { uploadChatFiles } from "@/lib/chat-upload";
 import { Loader2 } from "lucide-react";
 import logoAsset from "@/assets/rancod-logo.png.asset.json";
 

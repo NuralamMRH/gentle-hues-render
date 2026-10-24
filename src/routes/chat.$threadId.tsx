@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadChatFiles } from "@/lib/chat-upload";
 import { getThread, signAttachments } from "@/lib/chat-threads.functions";
 import { sendMessage } from "@/lib/chat.functions";
 import { takePendingPrompt } from "@/lib/pending-prompt";
@@ -19,21 +19,6 @@ export const Route = createFileRoute("/chat/$threadId")({
 });
 
 type Attachment = { path: string; mime: string; name: string };
-
-export async function uploadChatFiles(files: File[]): Promise<Attachment[]> {
-  if (!files.length) return [];
-  const { data } = await supabase.auth.getUser();
-  const uid = data.user?.id;
-  if (!uid) throw new Error("Sign in to attach files.");
-  const out: Attachment[] = [];
-  for (const file of files.slice(0, 6)) {
-    const path = `${uid}/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]+/g, "_")}`;
-    const { error } = await supabase.storage.from("chat-uploads").upload(path, file);
-    if (error) throw new Error(error.message);
-    out.push({ path, mime: file.type || "application/octet-stream", name: file.name });
-  }
-  return out;
-}
 
 function ThreadPage() {
   const { session, loading } = useSession();
