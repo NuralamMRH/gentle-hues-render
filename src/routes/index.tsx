@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { HeroPrompt } from "@/components/chat/hero-prompt";
 import logoAsset from "@/assets/rancod-logo.png.asset.json";
 import wordmarkAsset from "@/assets/rancod-wordmark.png.asset.json";
 import { Menu, X, ArrowRight, Coins, Layers, Map, Sparkles, Workflow } from "lucide-react";
@@ -276,6 +277,8 @@ function Landing() {
               <br />
               Get paid real money.
             </h1>
+
+            <HeroPrompt />
 
             <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               rancod.ai is an AI marketplace where providers host local AI models
